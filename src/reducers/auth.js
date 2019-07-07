@@ -1,5 +1,8 @@
+import { actionTypes } from "react-redux-firebase";
+
 const INITAL_STATE = {
-  isSignedIn: null
+  isSignedIn: null,
+  message: null
 };
 
 export default (state = INITAL_STATE, action) => {
@@ -11,6 +14,8 @@ export default (state = INITAL_STATE, action) => {
     case "SIGN_OUT":
       return { ...state, isSignedIn: false, userId: null };
     //modiferar bara isSignedOut
+    case "SIGN_ERROR":
+      return { ...state, isSignedIn: false, message: action.payload };
     default:
       return state;
   }

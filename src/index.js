@@ -31,6 +31,21 @@ const config = {
 
 firebase.initializeApp(config);
 firebase.firestore();
+
+firebase
+  .firestore()
+  .enablePersistence()
+  .catch(function(err) {
+    if (err.code == "failed-precondition") {
+      // Multiple tabs open, persistence can only be enabled
+      // in one tab at a a time.
+      // ...
+    } else if (err.code == "unimplemented") {
+      // The current browser does not support all of the
+      // features required to enable persistence
+      // ...
+    }
+  });
 var functions = firebase.functions();
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -49,6 +64,28 @@ const rrfConfig = {
   useFirestoreForProfile: true,
   AttachAuthIsReady: true,
   profileParamsToPopulate: profilePopulates
+  /*fileMetadataFactory: (uploadRes, firebase, metadata, downloadURL, ee) => {
+    console.log(
+      "kek",
+      uploadRes,
+      "test",
+      firebase,
+      "power",
+      metadata,
+      "wqeqe",
+      ee
+    );
+    // upload response from Firebase's storage upload
+    const {
+      metadata: { name, fullPath }
+    } = uploadRes;
+    // default factory includes name, fullPath, downloadURL
+    return {
+      name,
+      fullPath,
+      downloadURL
+    };
+  }*/
 };
 const rrfProps = {
   firebase,

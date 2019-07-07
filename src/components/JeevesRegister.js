@@ -2,36 +2,30 @@ import React from "react";
 import { connect } from "react-redux";
 import { firestoreConnect, populate } from "react-redux-firebase";
 import { compose } from "redux";
-import { Link } from "react-router-dom";
-import { createDeflate } from "zlib";
+import { Field, reduxForm } from "redux-form";
 import history from "../history";
 import { register } from "../actions";
 
 class JeevesRegister extends React.Component {
-  state = {
-    username: "",
-    email: "",
-    password: "",
-    emailExists: "",
-    usernameExists: ""
+  renderInput = ({ input, label, meta, type }) => {
+    console.log(meta.error);
+    //Field passar in argument in som vi kan använda
+    return (
+      <div className="field">
+        <input
+          {...input}
+          autoComplete="off"
+          className="pa2 input-reset ba bg-white hover-bg-white w-100"
+          type={type}
+        />
+        {meta.touched && (meta.error && <span>{meta.error}</span>)}
+      </div>
+    );
   };
 
-  self = this.props;
-
-  onChange = event => {
-    const name = event.target.name;
-    const value = event.target.value;
-    console.log(this.state.username, this.state.email, this.state.password);
-
-    this.setState({
-      [name]: value
-    });
-  };
-
-  handleSubmit = event => {
-    event.preventDefault();
-    const { userExists } = this.props;
-    this.props.registerUser(userExists);
+  onSubmit = formValues => {
+    this.props.registerUser(formValues);
+    //När vi submittar formet, kallas denna funktion och vi kallar på den actionCreator vi har tillgång till
   };
 
   renderTaken = kek => {
@@ -42,71 +36,82 @@ class JeevesRegister extends React.Component {
 
   render() {
     return (
-      <form onSubmit={this.handleSubmit}>
-        <div class="ui huge icon input">
+      <div class="pa7 black-80 bg-light-gray vh-100">
+        <form
+          onSubmit={this.props.handleSubmit(this.onSubmit)}
+          className="measure center"
+        >
+          <h2 className="f2 black-50 ttu center">REGISTER</h2>
           {this.renderTaken(this.props.userExists)}
-          username:
-          <input
-            type="text"
-            name="username"
-            value={this.state.username}
-            onChange={this.onChange}
-          />
-        </div>
-        <div class="ui huge icon input">
-          Subusername:
-          <input
-            type="text"
-            name="email"
-            value={this.state.email}
-            onChange={this.onChange}
-          />
-        </div>
-        <div class="ui huge icon input">
-          password:
-          <input
-            type="text"
+          Username:
+          <Field name="username" component={this.renderInput} />
+          Email:
+          <Field name="email" component={this.renderInput} />
+          Password:
+          <Field
             name="password"
-            value={this.state.password}
-            onChange={this.onChange}
+            component={this.renderInput}
+            label="password"
+            type="password"
           />
-        </div>
-        <input type="submit" value="Submit" />
-      </form>
+          First Name:
+          <Field
+            name="firstName"
+            component={this.renderInput}
+            label="firstname"
+          />
+          Last Name:
+          <Field
+            name="lastName"
+            component={this.renderInput}
+            label="lastname"
+          />
+          <input
+            type="submit"
+            className="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib mt2"
+            value="Submit"
+          />
+        </form>
+      </div>
     );
   }
 }
-
 const populates = [{ child: "createdBy", root: "users" }];
 const collection = "users";
 
 const mapDispatchToProps = (dispatch, ownProps) => {
-  const username = "marcustest";
-  const email = "marcustest@marcustest.com";
-  const password = "test12345";
-  const firstName = "Jemil";
-  const lastName = "Riahi";
   return {
-    registerUser: (inputs, props) => {
+    registerUser: props => {
+      const { username, email, password, firstName, lastName } = props;
+      //destructar ut alla props vi har från formet. Det är ett objekt pga att det är en form.
       ownProps.firestore
-        .get({ collection: "username", doc: username.toLowerCase() })
+        .get({ collection: "username", doc: props.username.toLowerCase() })
         .then(data => {
+          //kollar om användarnamnet redan finns. Har sparat användarnamnen i lowerCase i en egen collection och kollar mot detta.
           if (data.exists) {
+            //om denna data finns, logga ut något! :D
             console.log("hej");
           } else {
+            //om användaren inte hittas i collectionen med usernamet i lowercase, skapa användaren i firebase Egna Authgrej
             ownProps.firebase
               .createUser(
                 { email, password },
-                { username, email, firstName, lastName }
+                { username, email, firstName, lastName, profilepicURL: null }
               )
               .then(resp => {
+                //sparar ner användarnamnet i min lowercase-collection för att inte flera användarnman med lowercase ska finnas
                 ownProps.firestore.set(
                   {
                     collection: "username",
                     doc: username.toLowerCase()
                   },
                   { uid: ownProps.firebase.auth().currentUser.uid }
+                  //sparar endast ner authUIDT vi får ut av responsen av att skapa en användare och sparar det som en referens egentligen.
                 );
+              })
+              .then(resp => {
+                //pusha till dashboard
+                history.push("/info/dashboard");
               })
               .catch(err => {});
           }
@@ -126,13 +131,49 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
+const validate = values => {
+  //validation av fields
+  const errors = {};
+  console.log("eee", values);
+  if (!values.username) {
+    errors.username = "Required";
+  } else if (values.username.length > 15) {
+    errors.username = "Must be 15 characters or less";
+  } else if (values.username.length < 6) {
+    errors.username = "Must be 6 characters or more";
+  }
+  if (!values.email) {
+    errors.email = "Required";
+  } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)) {
+    errors.email = "Invalid email address";
+  }
+  if (!values.firstName) {
+    errors.firstName = "Required";
+  }
+  if (!values.lastName) {
+    errors.lastName = "Required";
+  }
+  if (!values.password) {
+    errors.password = "Required";
+  } else if (values.password.length < 6) {
+    errors.password = "Must be longer than 6";
+  }
+  return errors;
+};
+
 const enhance = compose(
+  reduxForm({ form: "form" }),
   firestoreConnect(props => [
     {
       collection,
       populates
     }
   ]),
+  reduxForm({
+    form: "sampleForm",
+    validate: validate,
+    asyncBlurFields: []
+  }),
   connect(
     mapStateToProps,
     mapDispatchToProps

@@ -38,15 +38,7 @@ exports.onUpvote = functions.https.onCall((data, context) => {
     .collection("responses")
     .doc(commentId);
 
-  return upvoteref.get().then(snap => {
-    console.log("wow", snap.data().upvotes);
-    const upvotes = snap.data().upvotes + number;
-
-    const data = { upvotes };
-    console.log(data);
-
-    return upvoteref.update(data);
-  });
+  upvoteref.update({ upvotes: admin.firestore.FieldValue.increment(number) });
 });
 
 exports.onUpvotePost = functions.https.onCall((data, context) => {
@@ -57,13 +49,7 @@ exports.onUpvotePost = functions.https.onCall((data, context) => {
     .collection("posts")
     .doc(postId);
 
-  return upvoteref.get().then(snap => {
-    console.log("wow", snap.data().upvotes);
-    const upvotes = snap.data().upvotes + number;
-
-    const data = { upvotes };
-    console.log(data);
-
-    return upvoteref.update(data);
+  upvoteref.update({
+    upvotes: admin.firestore.FieldValue.increment(number)
   });
 });

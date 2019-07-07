@@ -34,38 +34,39 @@ class JeevesAddPost extends React.Component {
   };
 
   render() {
-    console.log(this.props);
     return (
-      <form onSubmit={this.handleSubmit}>
-        <div class="ui huge icon input">
-          Title:
-          <input
-            type="text"
-            name="title"
-            value={this.state.title}
-            onChange={this.onChange}
-          />
+      <div className="">
+        <div class="pa7 black-80 bg-light-gray vh-100">
+          <form onSubmit={this.handleSubmit} className="measure center">
+            <h2 className="f2 black-50 ttu center">ADD POST</h2>
+            Title:
+            <input
+              type="text"
+              name="title"
+              value={this.state.title}
+              onChange={this.onChange}
+              className="pa2 input-reset ba bg-white hover-bg-white w-100"
+            />
+            Subtitle:
+            <input
+              type="text"
+              name="subtitle"
+              value={this.state.subtitle}
+              onChange={this.onChange}
+              className="pa2 input-reset ba bg-white hover-bg-white w-100"
+            />
+            Content:
+            <textarea
+              type="text"
+              name="content"
+              value={this.state.content}
+              onChange={this.onChange}
+              className="db border-box hover-black w-100 h-100 measure ba b--black-20 pa2 br2 mb2"
+            />
+            <input type="submit" value="Submit" />
+          </form>
         </div>
-        <div class="ui huge icon input">
-          Subtitle:
-          <input
-            type="text"
-            name="subtitle"
-            value={this.state.subtitle}
-            onChange={this.onChange}
-          />
-        </div>
-        <div class="ui huge icon input">
-          Content:
-          <input
-            type="text"
-            name="content"
-            value={this.state.content}
-            onChange={this.onChange}
-          />
-        </div>
-        <input type="submit" value="Submit" />
-      </form>
+      </div>
     );
   }
 }

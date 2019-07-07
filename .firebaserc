@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "jeeves-5d976"
+    "default": "jeeves-5d976",
+    "staging": "jeeves-5d976"
   }
 }
